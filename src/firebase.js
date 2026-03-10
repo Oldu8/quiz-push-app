@@ -3,14 +3,14 @@ import { initializeApp } from "firebase/app";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
-// Your web app's Firebase configuration
+// Your web app's Firebase configuration (from .env)
 const firebaseConfig = {
-  apiKey: "AIzaSyCgk34hN94kWCYUdnb4kPpnXrLadMyrToQ",
-  authDomain: "quiz-push-app.firebaseapp.com",
-  projectId: "quiz-push-app",
-  storageBucket: "quiz-push-app.firebasestorage.app",
-  messagingSenderId: "78267570013",
-  appId: "1:78267570013:web:cfadf475f6b6c2150a3ab4",
+  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
 };
 
 // Initialize Firebase
