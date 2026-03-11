@@ -1,14 +1,14 @@
-import React, { ReactNode } from 'react';
+import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import React, { ReactNode, useState } from 'react';
 import {
+  TextInput as RNTextInput,
   StyleSheet,
   Text,
-  TextInput as RNTextInput,
   TextInputProps,
   View,
   ViewStyle,
 } from 'react-native';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 
 type Props = TextInputProps & {
   label?: string;
@@ -22,12 +22,15 @@ export const TextInput: React.FC<Props> = ({
   error,
   containerStyle,
   rightAccessory,
+  onFocus,
+  onBlur,
   ...rest
 }) => {
   const colorScheme = useColorScheme();
   const palette = Colors[colorScheme ?? 'light'];
 
   const hasError = Boolean(error);
+  const [focused, setFocused] = useState(false);
 
   return (
     <View style={containerStyle}>
@@ -36,7 +39,11 @@ export const TextInput: React.FC<Props> = ({
         style={[
           styles.inputWrapper,
           {
-            borderColor: hasError ? palette.error : palette.border,
+            borderColor: hasError
+              ? palette.error
+              : focused
+                ? palette.primary
+                : palette.border,
             backgroundColor: palette.background,
           },
         ]}
@@ -44,6 +51,14 @@ export const TextInput: React.FC<Props> = ({
         <RNTextInput
           style={[styles.input, { color: palette.text }]}
           placeholderTextColor={palette.grey}
+          onFocus={(e) => {
+            setFocused(true);
+            onFocus?.(e);
+          }}
+          onBlur={(e) => {
+            setFocused(false);
+            onBlur?.(e);
+          }}
           {...rest}
         />
         {rightAccessory ? (
@@ -72,6 +87,10 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     fontSize: 16,
     flex: 1,
+    borderWidth: 0,
+    outlineWidth: 0,
+    outlineStyle: "solid",
+    outlineColor: "transparent",
   },
   accessory: {
     marginLeft: 8,
