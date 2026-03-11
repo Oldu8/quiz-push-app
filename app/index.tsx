@@ -1,11 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { useAuth } from "../src/hooks/useAuth";
 import { AuthDemoScreen } from "../src/screens/AuthDemoScreen";
 import { MainScreen } from "../src/screens/MainScreen";
+import { ProfileScreen } from "../src/screens/ProfileScreen";
 
 export default function IndexRoute() {
   const { user, isLoading } = useAuth();
+  const [active, setActive] = useState<"main" | "profile">("main");
 
   if (isLoading) {
     return (
@@ -15,7 +17,15 @@ export default function IndexRoute() {
     );
   }
 
-  return user ? <MainScreen /> : <AuthDemoScreen />;
+  if (!user) {
+    return <AuthDemoScreen />;
+  }
+
+  if (active === "profile") {
+    return <ProfileScreen onBack={() => setActive("main")} />;
+  }
+
+  return <MainScreen onOpenProfile={() => setActive("profile")} />;
 }
 
 const styles = StyleSheet.create({

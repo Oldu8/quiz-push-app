@@ -1,19 +1,15 @@
+import { PasswordInput } from "@/components/ui/password-input";
+import { PrimaryButton } from "@/components/ui/primary-button";
+import { TextInput } from "@/components/ui/text-input";
 import React, { useState } from "react";
-import {
-  ActivityIndicator,
-  Button,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
-import { loginUser, logoutUser, registerUser } from "../services/auth";
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useAuth } from "../hooks/useAuth";
+import { loginUser, registerUser } from "../services/auth";
 
 export const AuthDemoScreen: React.FC = () => {
-  const { user, isLoading } = useAuth();
+  const { isLoading } = useAuth();
 
+  const [mode, setMode] = useState<"login" | "signup">("login");
   const [name, setName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -72,69 +68,76 @@ export const AuthDemoScreen: React.FC = () => {
     }
   };
 
-  const handleLogout = async () => {
-    setError(null);
-    setSubmitting(true);
-    try {
-      await logoutUser();
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Logout failed.";
-      setError(message);
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
   const isBusy = isLoading || submitting;
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Firebase Auth Demo</Text>
+      <View style={styles.form}>
+        <Text style={styles.title}>
+          {mode === "login" ? "Welcome back" : "Create account"}
+        </Text>
+        <Text style={styles.subtitle}>
+          {mode === "login"
+            ? "Log in with your email and password."
+            : "Sign up with your details to get started."}
+        </Text>
 
-      <View style={styles.section}>
-        <Text style={styles.label}>Name (for register)</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Your name"
-          value={name}
-          onChangeText={setName}
-          autoCapitalize="words"
-        />
+        <View style={styles.section}>
+          {mode === "signup" && (
+            <TextInput
+              label="Name"
+              placeholder="Your name"
+              value={name}
+              onChangeText={setName}
+              autoCapitalize="words"
+            />
+          )}
 
-        <Text style={styles.label}>Email</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="you@example.com"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
+          <TextInput
+            label="Email"
+            placeholder="you@example.com"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
 
-        <Text style={styles.label}>Password</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
-      </View>
-
-      <View style={styles.section}>
-        <View style={styles.button}>
-          <Button
-            title="Register"
-            onPress={handleRegister}
-            disabled={isBusy}
+          <PasswordInput
+            label="Password"
+            placeholder="Password"
+            value={password}
+            onChangeText={setPassword}
           />
         </View>
-        <View style={styles.button}>
-          <Button title="Login" onPress={handleLogin} disabled={isBusy} />
-        </View>
-        <View style={styles.button}>
-          <Button title="Logout" onPress={handleLogout} disabled={isBusy} />
+
+        <View style={styles.section}>
+          <View style={styles.buttonRow}>
+            <PrimaryButton
+              label={mode === "login" ? "Login" : "Sign up"}
+              onPress={mode === "login" ? handleLogin : handleRegister}
+              loading={isBusy}
+              style={styles.buttonFlex}
+            />
+          </View>
+
+          <View style={styles.switchRow}>
+            {mode === "login" ? (
+              <Text style={styles.switchText}>
+                Don&apos;t have an account?{" "}
+                <Pressable onPress={() => setMode("signup")}>
+                  <Text style={styles.switchLink}>Sign up</Text>
+                </Pressable>
+              </Text>
+            ) : (
+              <Text style={styles.switchText}>
+                Already have an account?{" "}
+                <Pressable onPress={() => setMode("login")}>
+                  <Text style={styles.switchLink}>Log in</Text>
+                </Pressable>
+              </Text>
+            )}
+          </View>
         </View>
       </View>
 
@@ -153,17 +156,6 @@ export const AuthDemoScreen: React.FC = () => {
         </View>
       )}
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Current User</Text>
-        <Text style={styles.helperText}>
-          Status: {user ? "Logged in" : "Logged out"}
-        </Text>
-        <Text style={styles.helperText}>UID: {user?.uid ?? "N/A"}</Text>
-        <Text style={styles.helperText}>Email: {user?.email ?? "N/A"}</Text>
-        <Text style={styles.helperText}>
-          Display name: {user?.displayName ?? "N/A"}
-        </Text>
-      </View>
     </ScrollView>
   );
 };
@@ -171,34 +163,47 @@ export const AuthDemoScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    padding: 24,
-    paddingTop: 64,
+    paddingHorizontal: 24,
     backgroundColor: "#ffffff",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  form: {
+    width: "100%",
+    maxWidth: 420,
+    paddingVertical: 48,
   },
   title: {
     fontSize: 24,
     fontWeight: "600",
-    marginBottom: 24,
+    marginBottom: 4,
     textAlign: "center",
+  },
+  subtitle: {
+    fontSize: 14,
+    textAlign: "center",
+    marginBottom: 24,
   },
   section: {
     marginBottom: 24,
   },
-  label: {
+  buttonRow: {
+    marginBottom: 12,
+  },
+  buttonFlex: {
+    alignSelf: "stretch",
+  },
+  switchRow: {
+    marginTop: 8,
+  },
+  switchText: {
     fontSize: 14,
-    marginBottom: 4,
+    textAlign: "center",
   },
-  input: {
-    borderWidth: 1,
-    borderColor: "#cccccc",
-    borderRadius: 4,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    marginBottom: 12,
-    fontSize: 16,
-  },
-  button: {
-    marginBottom: 12,
+  switchLink: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#E0607E",
   },
   sectionTitle: {
     fontSize: 18,
