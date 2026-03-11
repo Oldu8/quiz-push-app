@@ -2,9 +2,21 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { PrimaryButton } from "@/components/ui/primary-button";
 import { TextInput } from "@/components/ui/text-input";
 import React, { useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  Platform,
+} from "react-native";
 import { useAuth } from "../hooks/useAuth";
 import { loginUser, registerUser } from "../services/auth";
+import {
+  registerForPushNotificationsAsync,
+  savePushTokenForCurrentUser,
+} from "../services/notifications";
 
 export const AuthDemoScreen: React.FC = () => {
   const { isLoading } = useAuth();
@@ -26,6 +38,13 @@ export const AuthDemoScreen: React.FC = () => {
     return null;
   };
 
+  const registerPushTokenForUser = async (uid: string) => {
+    const token = await registerForPushNotificationsAsync();
+    if (token) {
+      await savePushTokenForCurrentUser(uid, token, Platform.OS);
+    }
+  };
+
   const handleRegister = async () => {
     const commonError = validateCommonFields();
     if (commonError) {
@@ -40,7 +59,8 @@ export const AuthDemoScreen: React.FC = () => {
     setError(null);
     setSubmitting(true);
     try {
-      await registerUser(email.trim(), password, name.trim());
+      const user = await registerUser(email.trim(), password, name.trim());
+      await registerPushTokenForUser(user.uid);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Registration failed.";
       setError(message);
@@ -59,7 +79,8 @@ export const AuthDemoScreen: React.FC = () => {
     setError(null);
     setSubmitting(true);
     try {
-      await loginUser(email.trim(), password);
+      const user = await loginUser(email.trim(), password);
+      await registerPushTokenForUser(user.uid);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Login failed.";
       setError(message);
